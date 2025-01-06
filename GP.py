@@ -50,15 +50,15 @@ def fit_BG_curve(df):
         # Plotting
         plt.figure()
         plt.scatter(X, Y, color='blue', label='Data Points')
-        plt.plot(x_plot, y_pred, color='red', label=r"Linear Fit: $BG_{\text{diff}}$ = "+f"{slope:.4f}"+r'T_{\text{diff}}')
-        plt.fill_between(x_plot.flatten(), lower_bound.flatten(), upper_bound.flatten(), color='gray', alpha=0.3, label='95% Confidence Interval')
+        plt.plot(x_plot, y_pred, color='red', label=r"Linear Fit: $BG_{\text{diff}}$ = "+f"{slope:.4f}"+r'$T_{\text{diff}}$')
+        plt.fill_between(x_plot.flatten(), lower_bound.flatten(), upper_bound.flatten(), color='gray', alpha=0.3, label='95% Regression Confidence Interval')
         
         plt.grid(True)
         plt.xlabel(r"$T_{\text{diff}}$ [°C]")
         plt.ylabel(r'$BG_{\text{diff}}$ [mmol/L]')
         plt.xlim([-30,10])
         plt.legend()
-        plt.savefig('BGdiffTdiff.png')
+        plt.savefig('BGdiffTdiff.png',dpi=600)
 
         plt.figure()
         reference_temperature = 22.5;
@@ -66,14 +66,30 @@ def fit_BG_curve(df):
         reported_5mmolL = y_pred+5
         lower_bound = reported_5mmolL - confidence_interval
         upper_bound = reported_5mmolL + confidence_interval
-        plt.plot(absolute_temperature, reported_5mmolL, color='red', label=f'Reported Glucose for a real glucose of 5mmol/L')
+        plt.plot(absolute_temperature, reported_5mmolL, color='red', label=f'Reported glucose for a reference of 5mmol/L')
         plt.fill_between(absolute_temperature.flatten(), lower_bound.flatten(), upper_bound.flatten(), color='gray', alpha=0.3, label='95% Confidence Interval')
         
         plt.grid(True)
         plt.xlabel(r"Temperature [°C]")
         plt.ylabel(r'Reported Blood Glucose [mmol/L]')
         plt.legend()
-        plt.savefig("BGT.png")
+        plt.savefig("BGT.png",dpi=600)
+
+        plt.figure()
+        Y_res = Y - reg.predict(X)
+        stddev = np.sqrt(np.sum(Y_res**2)/(len(Y_res)-1))
+        reference_temperature = 22.5
+        absolute_temperature = x_plot+reference_temperature
+        reported_5mmolL = y_pred+5
+        lower_bound = reported_5mmolL - confidence_interval - stddev
+        upper_bound = reported_5mmolL + confidence_interval + stddev
+        plt.plot(absolute_temperature, reported_5mmolL, color='red', label=f'Reported glucose for a reference of 5mmol/L')
+        plt.fill_between(absolute_temperature.flatten(), lower_bound.flatten(), upper_bound.flatten(), color='gray', alpha=0.3, label='95% Prediction Confidence Interval')
+        plt.grid(True)
+        plt.xlabel(r"Temperature [°C]")
+        plt.ylabel(r'Reported Blood Glucose [mmol/L]')
+        plt.legend()
+        plt.savefig("BGT.png",dpi=600)
         plt.show()
 
 
